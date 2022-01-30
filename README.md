@@ -28,6 +28,7 @@ _DB_CONF = {
 
 ### Test webservice 
 
+Post man collection included for quick test run
 ```
  http://localhost:5000/
  
