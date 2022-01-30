@@ -41,9 +41,9 @@ Post man collection included for quick test run
 ### Build and Run using docker 
 1. install docker in your local pc and make sure it is running 
 2. Build the docker container using commmand 
-docker build -t dbproject1:latest .
+`docker build -t dbproject1:latest .`
 3. Run the container locally 
-docker run -d -p 5000:5000 dbproject1
+`docker run -d -p 5000:5000 dbproject1`
 
 
 
