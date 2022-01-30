@@ -26,13 +26,15 @@ _DB_CONF = {
    $  flask run
 ```
 
-### Test your webservice using curl
+### Test webservice 
 
 ```
  http://localhost:5000/
- http://localhost:5000/test - test sql query run 
- http://localhost:5000/runsqlquery - Post method 
- json post format {"sql":"<query-to-run>"}
+ 
+ http://localhost:5000/test - test sql query run  connects to aws db 
+ 
+ http://localhost:5000/runsqlquery - Post method runs query sent on aws db
+    json post format {"sql":"<query-to-run>"}
 
 ```
 ### Build and Run using docker 
