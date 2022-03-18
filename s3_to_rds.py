@@ -8,20 +8,13 @@ from loguru import logger
 from db_connector import DBInstance
 
 
+
 # sql queries dict for each table 
 # (key: csv file path in the s3 bucket, value: object of diff queries(DROP,CREate,INSERT))
 # each csv file is a table in the database
 # each object is a dict with keys: DROP, CREATE, INSERT
 SQL_Queries = OrderedDict({
-    "Instacart/Instacart/aisles.csv": {
-        "DROP": ("DROP TABLE IF EXISTS aisles"),
-        "CREATE": ("""CREATE TABLE aisles (
-            aisle_id INT NOT NULL, aisle VARCHAR(256) NOT NULL,
-            PRIMARY KEY (aisle_id))"""),
-        "INSERT": ("""INSERT INTO aisles ( aisle_id, aisle )
-            VALUES ( %s, %s )""")
-    },
-    "Instacart/Instacart/departments.csv": {
+    "departments.csv": {
         "DROP": ("DROP TABLE IF EXISTS departments"),
         "CREATE": (
             """CREATE TABLE departments (
@@ -32,7 +25,15 @@ SQL_Queries = OrderedDict({
         "INSERT": ("""INSERT INTO departments ( department_id, department )
             VALUES ( %s, %s )""")
     },
-    "Instacart/Instacart/orders.csv": {
+    "aisles_norm.csv": {
+        "DROP": ("DROP TABLE IF EXISTS aisles"),
+        "CREATE": ("""CREATE TABLE aisles (
+            aisle_id INT NOT NULL, aisle VARCHAR(256) NOT NULL,department_id INT NOT NULL,
+            PRIMARY KEY (aisle_id),CONSTRAINT pd_didfk_1 FOREIGN KEY (department_id) REFERENCES departments(department_id))"""),
+        "INSERT": ("""INSERT INTO aisles ( aisle_id, aisle, department_id)
+            VALUES ( %s, %s, %s )""")
+    },
+  "orders.csv": {
         "DROP": ("DROP TABLE IF EXISTS orders"),
         "CREATE": (
             """CREATE TABLE orders (
@@ -51,23 +52,22 @@ SQL_Queries = OrderedDict({
             VALUES ( %s, %s, %s, %s, %s, %s )"""
         )
     },
-    "Instacart/Instacart/products.csv": {
+  
+    "products_norm.csv": {
         "DROP": ("DROP TABLE IF EXISTS products"),
         "CREATE": (
             """CREATE TABLE products (
                 product_id INT NOT NULL,
-                product_name VARCHAR (256) NOT NULL,
+                product VARCHAR (256) NOT NULL,
                 aisle_id INT NOT NULL,
-                department_id INT NOT NULL,
                 PRIMARY KEY (product_id),
                 CONSTRAINT pd_aidfk_1 FOREIGN KEY (aisle_id) REFERENCES aisles(aisle_id),
-                CONSTRAINT pd_didfk_1 FOREIGN KEY (department_id) REFERENCES departments(department_id)
             )"""
         ),
         "INSERT": ("""INSERT INTO products ( product_id, product_name, aisle_id, department_id )
             VALUES ( %s, %s, %s, %s )""")
     },
-    "Instacart/Instacart/order_products.csv": {
+    "order_products.csv": {
         "DROP": ("DROP TABLE IF EXISTS order_products"),
         "CREATE": (
             """CREATE TABLE order_products (
@@ -88,6 +88,7 @@ SQL_Queries = OrderedDict({
             )"""
         )
     }
+
 })
 
 # aws s3 connection
