@@ -2,4 +2,3 @@ simplejson
 pymysql
 Flask
 flask-cors
-psycopg2

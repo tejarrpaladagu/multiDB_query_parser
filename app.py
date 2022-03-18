@@ -141,7 +141,7 @@ def run_mysql_query():
         return {'error': str(e)}
 
 # todo wirte redshift query getter
-
+@app.route('/runredshiftquery', methods=['POST'])
 def run_redshift_query():
     request_data = request.get_json()
     sql = request_data['sql']
