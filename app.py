@@ -8,7 +8,7 @@ import json
 import config
 from flask_cors import CORS
 import time
-# import psycopg2
+import psycopg2
 
 app = Flask(__name__)
 
@@ -89,7 +89,7 @@ def test_get():
 
         # response data
         response_data = {
-            'data': result,
+            'data': rows,
             'columns': columns,
             'compute_time': compute_time
         }
@@ -133,7 +133,8 @@ def run_mysql_query():
 
         # response data
         response_data = {
-            'data': result,
+            'data': rows,
+            'columns':columns,
             'compute_time': compute_time
         }
         return response(response_data)
@@ -141,10 +142,15 @@ def run_mysql_query():
         return {'error': str(e)}
 
 # todo wirte redshift query getter
-@app.route('/runredshiftquery', methods=['POST'])
+@app.route('/runredshiftquery', methods=['GET','POST'])
 def run_redshift_query():
     request_data = request.get_json()
-    sql = request_data['sql']
+    # sql = request_data['sql']
+    sql = "select count(*) from dev.instacart.aisles"
+    if request.method == 'GET':
+        sql = "select * from dev.instacart.aisles LIMIT 10;"
+    if request.method == 'POST':
+        sql = request_data['sql']  
     try:
         # connect to redshift
         conn = psycopg2.connect(host=config._REDSHIFT_CONF['host'],
@@ -160,6 +166,7 @@ def run_redshift_query():
 
         # get all column names
         columns = [desc[0] for desc in cur.description]
+        print('columnscLLL',columns)
         # get all data
         rows = cur.fetchall()
 
@@ -174,7 +181,8 @@ def run_redshift_query():
 
         # response data
         response_data = {
-            'data': result,
+            'data': rows,
+            'columns':columns,
             'compute_time': compute_time
         }
         return response(response_data)

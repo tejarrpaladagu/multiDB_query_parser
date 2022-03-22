@@ -10,13 +10,14 @@ _DB_CONF = {
  'db':'instacart'
 }
 
+
 # Redshift config
 _REDSHIFT_CONF = {
-  'host':'database-1.chb5mphqelwh.us-east-1.redshift.amazonaws.com',
+  'host':'redshift-cluster-1.ct6fvtggxdia.us-east-1.redshift.amazonaws.com',
   'port':5439,
-  'user':'admin',
-  'password':'database',
-  'database':'instacart'  # this is the database name
+  'user':'awsuser',
+  'password':'Database12',
+  'database':'dev'  # this is the database name
 }
 
 
