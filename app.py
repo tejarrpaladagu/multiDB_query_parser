@@ -17,6 +17,15 @@ CORS function is to avoid No 'Access-Control-Allow-Origin' error
 """
 CORS(app)
 
+
+
+def errors_obj (e):
+    return {
+    'rows':[[f'There was a error running the query.\n Please check your query and run again\n{e}']],
+    'colums': ['Error'],
+    'compute_time': 0
+}
+
 # set default function for jsonify
 def set_default(obj):
     if isinstance(obj, set):
@@ -31,22 +40,22 @@ def response(data): return app.response_class(
     mimetype='application/json'
 )
 
-# type handler for jsonify 
-def type_handler(x):
-    if isinstance(x, datetime.datetime):
-        return x.isoformat()
-    if isinstance(x, decimal.Decimal):
-        return '$%.2f' % (x)
-    raise TypeError("Unknown type")
+# # type handler for jsonify 
+# def type_handler(x):
+#     if isinstance(x, datetime.datetime):
+#         return x.isoformat()
+#     if isinstance(x, decimal.Decimal):
+#         return '$%.2f' % (x)
+#     raise TypeError("Unknown type")
 
-# jsonify function with custom type handler
-# convert datetime to isoformat and decimal to string
-def rows_to_json(cols, rows):
-    result = []
-    for row in rows:
-        data = dict(zip(cols, row))
-        result.append(data)
-    return json.dumps(result, default=type_handler)
+# # jsonify function with custom type handler
+# # convert datetime to isoformat and decimal to string
+# def rows_to_json(cols, rows):
+#     result = []
+#     for row in rows:
+#         data = dict(zip(cols, row))
+#         result.append(data)
+#     return json.dumps(result, default=type_handler)
 
 
 @app.route('/')
@@ -77,7 +86,7 @@ def test_get():
         rows = cur.fetchall()
 
         # build json
-        result = rows_to_json(columns, rows)
+        # result = rows_to_json(columns, rows)
         # print(result)
 
         # end time
@@ -85,8 +94,6 @@ def test_get():
         cur.close()
         conn.close()
         
-        
-
         # response data
         response_data = {
             'data': rows,
@@ -95,12 +102,15 @@ def test_get():
         }
         return response(response_data)
     except Exception as e:
-        return {'error': str(e)}
+        return response(errors_obj(str(e))) 
 
 
-@app.route('/runsqlquery', methods=['POST'])
+@app.route('/runsqlquery/instacart', methods=['POST'])
+@app.route('/runsqlquery/Abc_retail', methods=['POST'])
 def run_mysql_query():
     # read post request data
+    url = request.path
+    _, db, db_table = url.split('/')
     request_data = request.get_json()
     sql = request_data['sql']
     # print(sql)
@@ -110,7 +120,7 @@ def run_mysql_query():
                                port=config._DB_CONF['port'],
                                user=config._DB_CONF['user'],
                                passwd=config._DB_CONF['passwd'],
-                               db=config._DB_CONF['db'])
+                               db=db_table)
         cur = conn.cursor()
         # caluclating the time from now
         start_time = time.time()
@@ -123,7 +133,7 @@ def run_mysql_query():
         rows = cur.fetchall()
 
         # build json
-        result = rows_to_json(columns, rows)
+        # result = rows_to_json(columns, rows)
         # print(result)
 
         # end time
@@ -139,16 +149,25 @@ def run_mysql_query():
         }
         return response(response_data)
     except Exception as e:
-        return {'error': str(e)}
+        return response(errors_obj(str(e)))
+
+
+
+
 
 # todo wirte redshift query getter
-@app.route('/runredshiftquery', methods=['GET','POST'])
+@app.route('/runredshiftquery/instacart', methods=['GET'])
+@app.route('/runredshiftquery/instacart', methods=['POST'])
+@app.route('/runredshiftquery/Abc_retail', methods=['POST'])
 def run_redshift_query():
+    url = request.path
+    _, db, db_table = url.split('/')
+
     request_data = request.get_json()
     # sql = request_data['sql']
     sql = "select count(*) from dev.instacart.aisles"
     if request.method == 'GET':
-        sql = "select * from dev.instacart.aisles LIMIT 10;"
+        sql = "select * from aisles LIMIT 10;"
     if request.method == 'POST':
         sql = request_data['sql']  
     try:
@@ -157,7 +176,9 @@ def run_redshift_query():
                                 port=config._REDSHIFT_CONF['port'],
                                 user=config._REDSHIFT_CONF['user'],
                                 password=config._REDSHIFT_CONF['password'],
-                                database=config._REDSHIFT_CONF['database'])
+                                database=config._REDSHIFT_CONF['database'],
+                                options='-c search_path={schema}'.format(schema=db_table)
+                                )
         cur = conn.cursor()
         # caluclating the time from now
         start_time = time.time()
@@ -171,7 +192,7 @@ def run_redshift_query():
         rows = cur.fetchall()
 
         # build json
-        result = rows_to_json(columns, rows)
+        # result = rows_to_json(columns, rows)
         # print(result)
 
         # end time
@@ -187,7 +208,7 @@ def run_redshift_query():
         }
         return response(response_data)
     except Exception as e:
-        return {'error': str(e)}    
+        return response(errors_obj(str(e)))    
 
 
 @app.errorhandler(500)
