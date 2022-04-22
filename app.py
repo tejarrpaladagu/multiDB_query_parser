@@ -21,7 +21,7 @@ CORS(app)
 
 def errors_obj (e):
     return {
-    'rows':[[f'There was a error running the query.\n Please check your query and run again\n{e}']],
+    'rows':[[f'Error: {e}']],
     'colums': ['Error'],
     'compute_time': 0
 }
@@ -40,23 +40,11 @@ def response(data): return app.response_class(
     mimetype='application/json'
 )
 
-# # type handler for jsonify 
-# def type_handler(x):
-#     if isinstance(x, datetime.datetime):
-#         return x.isoformat()
-#     if isinstance(x, decimal.Decimal):
-#         return '$%.2f' % (x)
-#     raise TypeError("Unknown type")
-
-# # jsonify function with custom type handler
-# # convert datetime to isoformat and decimal to string
-# def rows_to_json(cols, rows):
-#     result = []
-#     for row in rows:
-#         data = dict(zip(cols, row))
-#         result.append(data)
-#     return json.dumps(result, default=type_handler)
-
+def err_response(data): return app.response_class(
+    response=json.dumps(data, default=set_default),
+    status=400,
+    mimetype='application/json'
+)
 
 @app.route('/')
 def hello():
@@ -85,9 +73,6 @@ def test_get():
         # get all data
         rows = cur.fetchall()
 
-        # build json
-        # result = rows_to_json(columns, rows)
-        # print(result)
 
         # end time
         compute_time = time.time() - start_time
@@ -132,9 +117,6 @@ def run_mysql_query():
         # get all data
         rows = cur.fetchall()
 
-        # build json
-        # result = rows_to_json(columns, rows)
-        # print(result)
 
         # end time
         compute_time = time.time() - start_time
@@ -149,7 +131,7 @@ def run_mysql_query():
         }
         return response(response_data)
     except Exception as e:
-        return response(errors_obj(str(e)))
+        return err_response(errors_obj(str(e)))
 
 
 
@@ -191,9 +173,6 @@ def run_redshift_query():
         # get all data
         rows = cur.fetchall()
 
-        # build json
-        # result = rows_to_json(columns, rows)
-        # print(result)
 
         # end time
         compute_time = time.time() - start_time
@@ -208,7 +187,7 @@ def run_redshift_query():
         }
         return response(response_data)
     except Exception as e:
-        return response(errors_obj(str(e)))    
+        return err_response(errors_obj(str(e)))    
 
 
 @app.errorhandler(500)
@@ -221,6 +200,6 @@ def server_error(e):
 
 
 if __name__ == '__main__':
-    app.run(threaded=True, debug=True,port=8051)
+    app.run(threaded=True, debug=True,port=5000)
 
 # [END app]
