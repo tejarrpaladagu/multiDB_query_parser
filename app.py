@@ -68,7 +68,7 @@ def json_cursor(cursor):
     json_data = json.loads(new_data)
     # parse json data to list of lists
     data = [list(i.values()) for i in json_data]
-    return data
+    return data,columns
     # data = [dict(zip(columns, row)) for row in cursor]
 
     # print('new sedata',data)
@@ -144,7 +144,7 @@ def run_mysql_query():
 
         cur.execute(sql)
         print('data is being converted')
-        data = json_cursor(cur)
+        data,columns = json_cursor(cur)
        
         # end time
         compute_time = time.time() - start_time
