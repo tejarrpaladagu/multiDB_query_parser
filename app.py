@@ -9,6 +9,8 @@ import config
 from flask_cors import CORS
 import time
 import psycopg2
+import pandas as pd
+import numpy as np
 
 app = Flask(__name__)
 
@@ -46,6 +48,34 @@ def err_response(data): return app.response_class(
     mimetype='application/json'
 )
 
+# method to read numbers tuple & conver Decimal('246393')) to float
+def read_tuple(tup):
+    return [float(i) for i in tup]
+
+
+# json convert cursor data
+def json_cursor(cursor):
+
+    columns = [i[0] for i in cursor.description]
+
+    df = pd.DataFrame(cursor.fetchall(),columns=columns)
+    # first 500 rows
+    df = df.head(500)
+
+    print(df.count())
+
+    new_data = df.to_json(orient="records")
+    json_data = json.loads(new_data)
+    # parse json data to list of lists
+    data = [list(i.values()) for i in json_data]
+    return data
+    # data = [dict(zip(columns, row)) for row in cursor]
+
+    # print('new sedata',data)
+    # return data
+
+
+
 @app.route('/')
 def hello():
     # test api
@@ -67,6 +97,8 @@ def test_get():
 
         sql = "SELECT * FROM aisles LIMIT 3;"
         cur.execute(sql)
+        data = json_cursor(cur)
+
 
         # get all column names
         columns = [desc[0] for desc in cur.description]
@@ -81,7 +113,7 @@ def test_get():
         
         # response data
         response_data = {
-            'data': rows,
+            'data': data,
             'columns': columns,
             'compute_time': compute_time
         }
@@ -111,13 +143,9 @@ def run_mysql_query():
         start_time = time.time()
 
         cur.execute(sql)
-
-        # get all column names
-        columns = [desc[0] for desc in cur.description]
-        # get all data
-        rows = cur.fetchall()
-
-
+        print('data is being converted')
+        data = json_cursor(cur)
+       
         # end time
         compute_time = time.time() - start_time
         cur.close()
@@ -125,7 +153,7 @@ def run_mysql_query():
 
         # response data
         response_data = {
-            'data': rows,
+            'data': data,
             'columns':columns,
             'compute_time': compute_time
         }
@@ -134,10 +162,6 @@ def run_mysql_query():
         return err_response(errors_obj(str(e)))
 
 
-
-
-
-# todo wirte redshift query getter
 @app.route('/runredshiftquery/instacart', methods=['GET'])
 @app.route('/runredshiftquery/instacart', methods=['POST'])
 @app.route('/runredshiftquery/Abc_retail', methods=['POST'])
@@ -181,7 +205,7 @@ def run_redshift_query():
 
         # response data
         response_data = {
-            'data': rows,
+            'data': rows[:500],
             'columns':columns,
             'compute_time': compute_time
         }
