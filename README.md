@@ -1,11 +1,4 @@
-# todo
-1. Upload data to redshift
-2. Test the redshift connection 
-3. write endpoint to execute redshift data
 
-4. Solved diffrent query issue with columsn response 
-if columns list in data return then display in table 
-else display as text box
 ### Install required python packages
 
 ```
