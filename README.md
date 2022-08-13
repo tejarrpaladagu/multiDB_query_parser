@@ -1,4 +1,5 @@
 
+
 ### Install required python packages
 
 ```
@@ -45,6 +46,15 @@ Post man collection included for quick test run
 `docker build -t dbproject1:latest .`
 3. Run the container locally 
 `docker run -d -p 5000:5000 dbproject1`
+
+
+![Home page](https://user-images.githubusercontent.com/18380025/184508000-1c85d4ab-cbb6-48d6-be1e-51eab2cd3d73.PNG)
+
+![querying](https://user-images.githubusercontent.com/18380025/184508015-b4168837-1955-476d-aa61-3ff5bb2cf19e.PNG)
+
+![data_f](https://user-images.githubusercontent.com/18380025/184508006-2e55b1c5-d343-4a2f-898c-c1dbd4f62979.PNG)
+
+
 
 
 
